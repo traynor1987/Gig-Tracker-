@@ -5,7 +5,7 @@ sdk_root_path="${1:?Usage: ./build-debug.sh /absolute/path/to/android-sdk}"
 project_root_path="$(cd "$(dirname "$0")" && pwd)"
 app_root_path="$project_root_path/app"
 build_root_path="$app_root_path/build/manual-debug"
-output_root_path="$app_root_path/build/outputs/apk/debug"
+output_root_path="$app_root_path/build/outputs/apk/release"
 android_jar_path="$sdk_root_path/platforms/android-35/android.jar"
 build_tools_path="$sdk_root_path/build-tools/35.0.0"
 
@@ -62,8 +62,8 @@ fi
   --ks-key-alias "$signing_alias" \
   --ks-pass pass:"$signing_store_password" \
   --key-pass pass:"$signing_key_password" \
-  --out "$output_root_path/app-debug.apk" \
+  --out "$output_root_path/app-release.apk" \
   "$build_root_path/app-aligned.apk"
 
-"$build_tools_path/apksigner" verify --verbose "$output_root_path/app-debug.apk"
-echo "$output_root_path/app-debug.apk"
+"$build_tools_path/apksigner" verify --verbose "$output_root_path/app-release.apk"
+echo "$output_root_path/app-release.apk"
