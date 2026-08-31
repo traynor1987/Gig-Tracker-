@@ -24,8 +24,8 @@ mkdir -p "$build_root_path/compiled-res" "$build_root_path/generated" "$build_ro
   --custom-package site.chatgpt.traynor1987.gigtracker \
   --min-sdk-version 26 \
   --target-sdk-version 35 \
-  --version-code 2 \
-  --version-name 1.1-debug \
+  --version-code 3 \
+  --version-name 1.2.0 \
   -I "$android_jar_path" \
   "$build_root_path/compiled-res/resources.zip"
 
@@ -46,19 +46,22 @@ cp "$build_root_path/app-unsigned-unaligned.apk" "$build_root_path/app-with-dex.
 zip -q -j "$build_root_path/app-with-dex.apk" "$build_root_path/dex/classes.dex"
 "$build_tools_path/zipalign" -f 4 "$build_root_path/app-with-dex.apk" "$build_root_path/app-aligned.apk"
 
-debug_keystore_path="${GIG_TRACKER_DEBUG_KEYSTORE_PATH:-$build_root_path/debug.keystore}"
+debug_keystore_path="${GIG_TRACKER_SIGNING_KEYSTORE_PATH:-${GIG_TRACKER_DEBUG_KEYSTORE_PATH:-$build_root_path/debug.keystore}}"
+signing_alias="${GIG_TRACKER_SIGNING_ALIAS:-androiddebugkey}"
+signing_store_password="${GIG_TRACKER_SIGNING_STORE_PASSWORD:-android}"
+signing_key_password="${GIG_TRACKER_SIGNING_KEY_PASSWORD:-$signing_store_password}"
 mkdir -p "$(dirname "$debug_keystore_path")"
 if [[ ! -f "$debug_keystore_path" ]]; then
-  keytool -genkeypair -keystore "$debug_keystore_path" -storepass android -keypass android \
-    -alias androiddebugkey -dname "CN=Android Debug,O=Gig Tracker,C=GB" \
+  keytool -genkeypair -keystore "$debug_keystore_path" -storepass "$signing_store_password" -keypass "$signing_key_password" \
+    -alias "$signing_alias" -dname "CN=Gig Tracker,O=Gig Tracker,C=GB" \
     -keyalg RSA -keysize 2048 -validity 10000 >/dev/null 2>&1
 fi
 
 "$build_tools_path/apksigner" sign \
   --ks "$debug_keystore_path" \
-  --ks-key-alias androiddebugkey \
-  --ks-pass pass:android \
-  --key-pass pass:android \
+  --ks-key-alias "$signing_alias" \
+  --ks-pass pass:"$signing_store_password" \
+  --key-pass pass:"$signing_key_password" \
   --out "$output_root_path/app-debug.apk" \
   "$build_root_path/app-aligned.apk"
 
